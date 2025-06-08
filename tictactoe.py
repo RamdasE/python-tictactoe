@@ -1,134 +1,108 @@
-import tkinter #tkinter is a built-in library in Python for creating GUI applictions
+import tkinter as tk
 
+class TicTacToe:
+    def __init__(self, window):
+        self.window = window
+        self.window.title("Tic Tac Toe")
+        self.curr_player = "X"
+        self.turns = 0
+        self.game_over = False
+        self.board = [[None]*3 for _ in range(3)]
 
-def set_tile(row, column):
-    global curr_player
+        # Colors
+        self.color_blue = "#4584b6"
+        self.color_yellow = "#f7d74c"
+        self.color_gray = "#d9d9d9"
+        self.color_light_gray = "#f2f2f2"
 
-    if (game_over):
-        return
+        # Frame and label
+        self.frame = tk.Frame(self.window)
+        self.label = tk.Label(self.frame, text=self.curr_player + "'s turn", font=("Consolas", 20),
+                              background=self.color_gray, foreground="white")
+        self.label.grid(row=0, column=0, columnspan=3, sticky="we")
 
-    if board[row][column]["text"]!="":
-        return
-
-    board[row][column]["text"]=curr_player #set the text of the button to the current player
-
-    if curr_player==playerO:#swiitch player
-        curr_player=playerX
-    else:       
-        curr_player=playerO
-        label["text"]=curr_player+"'s turn" #if the current player is X
-
-    #check_winner
-    check_winner()
-
-def check_winner():
-    global turns, game_over
-    turns += 1
-
-    # Horizontal check
-    for row in range(3):
-        if board[row][0]["text"] == board[row][1]["text"] == board[row][2]["text"] and board[row][0]["text"] != "":
-            label.config(text=board[row][0]["text"] + " wins!", foreground=color_yellow)
-            for column in range(3):
-                board[row][column].config(foreground=color_yellow, background=color_light_gray)
-            game_over = True
-            return
-
-    for column in range(3):
-        # Vertical check
-        if board[0][column]["text"] == board[1][column]["text"] == board[2][column]["text"] and board[0][column]["text"] != "":
-            label.config(text=board[0][column]["text"] + " wins!", foreground=color_yellow)
-            for row in range(3):
-                board[row][column].config(foreground=color_yellow, background=color_light_gray)
-            game_over = True
-            return
-        
-    if board[0][0]["text"] == board[1][1]["text"] == board[2][2]["text"] and board[0][0]["text"] != "":
-        # Diagonal check (top-left to bottom-right)
-        label.config(text=board[0][0]["text"] + " wins!", foreground=color_yellow)
-        for i in range(3):
-            board[i][i].config(foreground=color_yellow, background=color_light_gray)
-        game_over = True
-        return    
-    
-    if board[0][2]["text"] == board[1][1]["text"] == board[2][0]["text"] and board[0][2]["text"] != "":
-        # Diagonal check (top-right to bottom-left)
-        label.config(text=board[0][2]["text"] + " wins!", foreground=color_yellow)
-        for i in range(3):
-            board[i][2-i].config(foreground=color_yellow, background=color_light_gray)
-        game_over = True
-        return
-    
-    #tie check
-    if turns == 9:
-        label.config(text="It's a tie!", foreground=color_yellow)
+        # Buttons (game board)
         for row in range(3):
-            for column in range(3):
-                board[row][column].config(foreground=color_yellow, background=color_light_gray)
-        game_over = True
+            for col in range(3):
+                self.board[row][col] = tk.Button(self.frame, text="", font=("Consolas", 50, "bold"),
+                                                 background=self.color_gray, foreground=self.color_blue,
+                                                 width=4, height=1,
+                                                 command=lambda r=row, c=col: self.set_tile(r, c))
+                self.board[row][col].grid(row=row+1, column=col)
 
-def new_game():
-    global turns, game_over
-    turns = 0
-    game_over = False
-    label.config(text=curr_player+"'s turn", foreground="white")
-    label["text"] = curr_player + "'s turn"
+        # Reset button
+        reset_btn = tk.Button(self.frame, text="Reset", font=("Consolas", 20),
+                              background=self.color_gray, foreground="white", command=self.reset_game)
+        reset_btn.grid(row=4, column=0, columnspan=3, sticky="we")
 
-    for row in range(3):
-        for column in range(3):
-            board[row][column].config(text="", foreground=color_blue, background=color_gray) #reset the text and colors of the buttons
+        self.frame.pack()
 
-#game setup
-playerX="X"
-playerO="O"
-curr_player=playerX
-board=[[0,0,0],
-       [0,0,0],
-       [0,0,0]] #3X3 board
+    def set_tile(self, row, col):
+        if self.game_over or self.board[row][col]["text"] != "":
+            return
 
-#custom colors
-color_blue="#4584b6"
-color_yellow="#f7d74c"
-color_gray="#d9d9d9"
-color_light_gray="#f2f2f2"
+        self.board[row][col]["text"] = self.curr_player
+        self.check_winner()
 
-turns=0
-game_over=False
+        if not self.game_over:
+            self.switch_player()
 
-#window setup
-window=tkinter.Tk() #create the game window
-window.title("Tic Tac Toe") #set the title of the window
-window.resizable(False,False) #make the window not resizable
+    def switch_player(self):
+        self.curr_player = "O" if self.curr_player == "X" else "X"
+        self.label["text"] = self.curr_player + "'s turn"
 
-frame=tkinter.Frame(window)
-label=tkinter.Label(frame, text=curr_player+"'s turn", font=("Consolas",20),background=color_gray,
-                    foreground="white") #create a frame for the window
+    def check_winner(self):
+        self.turns += 1
+        b = self.board
+        lines = [  # 8 possible win conditions
+            [b[0][0], b[0][1], b[0][2]],
+            [b[1][0], b[1][1], b[1][2]],
+            [b[2][0], b[2][1], b[2][2]],
+            [b[0][0], b[1][0], b[2][0]],
+            [b[0][1], b[1][1], b[2][1]],
+            [b[0][2], b[1][2], b[2][2]],
+            [b[0][0], b[1][1], b[2][2]],
+            [b[0][2], b[1][1], b[2][0]],
+        ]
+
+        for line in lines:
+            if line[0]["text"] == line[1]["text"] == line[2]["text"] != "":
+                for btn in line:
+                    btn.config(foreground=self.color_yellow, background=self.color_light_gray)
+                self.label.config(text=f"{line[0]['text']} wins!", foreground=self.color_yellow)
+                self.game_over = True
+                return
+
+        if self.turns == 9:
+            self.label.config(text="It's a tie!", foreground=self.color_yellow)
+            for row in self.board:
+                for btn in row:
+                    btn.config(foreground=self.color_yellow, background=self.color_light_gray)
+            self.game_over = True
+
+    def reset_game(self):
+        self.curr_player = "X"
+        self.turns = 0
+        self.game_over = False
+        self.label.config(text=self.curr_player + "'s turn", foreground="white")
+        for row in self.board:
+            for btn in row:
+                btn.config(text="", foreground=self.color_blue, background=self.color_gray)
 
 
+# Start the game
+if __name__ == "__main__":
+    root = tk.Tk()
+    game = TicTacToe(root)
+    
+    # Center the window on the screen
+    root.update()
+    window_width = root.winfo_width()
+    window_height = root.winfo_height()
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    window_x = int(screen_width / 2 - window_width / 2)
+    window_y = int(screen_height / 2 - window_height / 2)
+    root.geometry(f"{window_width}x{window_height}+{window_x}+{window_y}")
 
-label.grid(row=0,column=0,columnspan=3, sticky="we")#add the label to the frame
-for row in range(3):
-    for column in range(3):
-        board[row][column]=tkinter.Button(frame, text="", font=("Consolas",50, "bold"),
-                                            background=color_gray, foreground=color_blue, width=4, height=1,
-                                            command=lambda row=row, column=column: set_tile(row, column)) #create a button for each tile in the board
-
-        board[row][column].grid(row=row+1, column=column) #add the button to the frame
-
-button=tkinter.Button(frame, text="Reset", font=("Consolas",20), background=color_gray,
-                      foreground="white", command=new_game)   
-button.grid(row=4,column=0, columnspan=3, sticky="we") #create a button to reset the game and add it to the frame
-frame.pack()#add the frame to the window
-window.update()
-window_width=window.winfo_width() #get the width of the window
-window_height=window.winfo_height() #get the height of the window
-screen_width=window.winfo_screenwidth() #get the width of the screen
-screen_height=window.winfo_screenheight() #get the height of the screen
-
-#calculate the position of the window to center it on the screen
-window_x=int(screen_width/2 - window_width/2) #calculate the x position of the window
-window_y=int(screen_height/2 - window_height/2) #calculate the y position of the window
-
-#format "(w)x(h)+(x)+(y)" to set the position of the window
-window.geometry(f"{window_width}x{window_height}+{window_x}+{window_y}") #set the size and position of the window
-window.mainloop() #start the main loop of the window
+    root.mainloop()
